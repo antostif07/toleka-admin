@@ -2,10 +2,10 @@
 
 import { useState, useActionState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { 
-  Car, 
+import {  
   Calendar, 
   Users, 
   UserCheck, 
@@ -84,13 +84,9 @@ export default function Sidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 py-6 border-b border-border">
-            <div className="p-2 bg-primary rounded-lg">
-              <Car className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">TaxiBooking</h1>
-              <p className="text-xs text-muted-foreground">Admin Panel</p>
-            </div>
+            <Link href="/admin" className="flex items-center gap-2">
+              <Image src="/images/toleka-no-bg.png" alt="Logo" width={256} height={16} />
+            </Link>
           </div>
 
           {/* Navigation */}

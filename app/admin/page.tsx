@@ -1,110 +1,78 @@
-'use client';
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  Car, 
-  Users, 
-  DollarSign, 
+import {
   Clock,
   MapPin,
   Star,
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
+import { getDashboardStats, getRecentBookings, getTopDrivers } from '@/lib/firebase/api';
 
-// Mock data
-const stats = [
-  {
-    title: 'Réservations Aujourd\'hui',
-    value: '127',
-    change: '+12%',
-    trend: 'up',
-    icon: Calendar,
-    color: 'text-blue-500',
-  },
-  {
-    title: 'Chauffeurs Actifs',
-    value: '34',
-    change: '+2',
-    trend: 'up',
-    icon: Car,
-    color: 'text-green-500',
-  },
-  {
-    title: 'Nouveaux Clients',
-    value: '18',
-    change: '+8%',
-    trend: 'up',
-    icon: Users,
-    color: 'text-purple-500',
-  },
-  {
-    title: 'Revenus du Jour',
-    value: '€2,847',
-    change: '-3%',
-    trend: 'down',
-    icon: DollarSign,
-    color: 'text-yellow-500',
-  },
-];
+// const recentBookings = [
+//   {
+//     id: '#BK-001',
+//     client: 'Marie Dubois',
+//     driver: 'Jean Martin',
+//     pickup: '123 Rue de la Paix',
+//     destination: 'Aéroport CDG',
+//     status: 'En cours',
+//     time: '10:30',
+//     amount: '€45.00',
+//   },
+//   {
+//     id: '#BK-002',
+//     client: 'Pierre Lambert',
+//     driver: 'Sophie Bernard',
+//     pickup: '456 Avenue des Champs',
+//     destination: 'Gare du Nord',
+//     status: 'Terminé',
+//     time: '09:15',
+//     amount: '€28.00',
+//   },
+//   {
+//     id: '#BK-003',
+//     client: 'Alice Moreau',
+//     driver: 'Michel Durand',
+//     pickup: '789 Boulevard Saint-Germain',
+//     destination: '321 Rue de Rivoli',
+//     status: 'Planifié',
+//     time: '14:00',
+//     amount: '€32.00',
+//   },
+// ];
 
-const recentBookings = [
-  {
-    id: '#BK-001',
-    client: 'Marie Dubois',
-    driver: 'Jean Martin',
-    pickup: '123 Rue de la Paix',
-    destination: 'Aéroport CDG',
-    status: 'En cours',
-    time: '10:30',
-    amount: '€45.00',
-  },
-  {
-    id: '#BK-002',
-    client: 'Pierre Lambert',
-    driver: 'Sophie Bernard',
-    pickup: '456 Avenue des Champs',
-    destination: 'Gare du Nord',
-    status: 'Terminé',
-    time: '09:15',
-    amount: '€28.00',
-  },
-  {
-    id: '#BK-003',
-    client: 'Alice Moreau',
-    driver: 'Michel Durand',
-    pickup: '789 Boulevard Saint-Germain',
-    destination: '321 Rue de Rivoli',
-    status: 'Planifié',
-    time: '14:00',
-    amount: '€32.00',
-  },
-];
+// const topDrivers = [
+//   {
+//     name: 'Jean Martin',
+//     trips: 48,
+//     rating: 4.9,
+//     earnings: '€1,240',
+//   },
+//   {
+//     name: 'Sophie Bernard',
+//     trips: 42,
+//     rating: 4.8,
+//     earnings: '€1,120',
+//   },
+//   {
+//     name: 'Michel Durand',
+//     trips: 39,
+//     rating: 4.7,
+//     earnings: '€980',
+//   },
+// ];
 
-const topDrivers = [
-  {
-    name: 'Jean Martin',
-    trips: 48,
-    rating: 4.9,
-    earnings: '€1,240',
-  },
-  {
-    name: 'Sophie Bernard',
-    trips: 42,
-    rating: 4.8,
-    earnings: '€1,120',
-  },
-  {
-    name: 'Michel Durand',
-    trips: 39,
-    rating: 4.7,
-    earnings: '€980',
-  },
-];
+export default async function AdminDashboard() {
+  // await protectedRoute(); // Protège la page
 
-export default function AdminDashboard() {
+  // On appelle les fonctions en parallèle pour plus de performance
+  const [stats, recentBookings, topDrivers] = await Promise.all([
+    getDashboardStats(),
+    getRecentBookings(),
+    getTopDrivers()
+  ]);
+
   return (
     <div className="space-y-6">
       {/* Welcome */}

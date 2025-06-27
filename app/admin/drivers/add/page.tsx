@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,48 +26,20 @@ import {
   Save,
   X
 } from 'lucide-react';
+import { ActionState, createDriverAction } from '../actions';
 
 export default function AddDriverPage() {
+  const [state, action, pending] = useActionState<ActionState | undefined, FormData>(
+      createDriverAction,
+      undefined,
+    );
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData,] = useState({
-    // Informations personnelles
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    address: '',
-    city: 'Paris',
-    postalCode: '',
-    
-    // Documents
-    licenseNumber: '',
-    licenseExpiry: '',
-    taxiLicense: '',
-    taxiLicenseExpiry: '',
-    
-    // Véhicule
-    vehicleModel: '',
-    vehiclePlate: '',
-    vehicleYear: '',
-    vehicleColor: '',
-    vehicleSeats: '4',
-    vehicleType: 'standard',
-    
-    // Paramètres
-    isActive: true,
-    canAcceptCash: true,
-    canAcceptCard: true,
-    workingHours: 'flexible',
-    preferredZones: [] as string[],
-    
-    // Bancaire
-    bankName: '',
-    iban: '',
-    bic: '',
-  });
 
+  // Gérer la redirection ou l'affichage de message après la soumission
+  if (state?.message && !state.errors) {
+    // Afficher un toast de succès/erreur ici
+    // Et potentiellement rediriger
+  }
   // const [_, setUploadedFiles] = useState({
   //   profilePhoto: null,
   //   licensePhoto: null,
@@ -83,34 +55,11 @@ export default function AddDriverPage() {
   //   setUploadedFiles(prev => ({ ...prev, [field]: file }));
   // };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulation de l'envoi
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push('/admin/drivers');
-    }, 2000);
-  };
-
-  const vehicleTypes = [
-    { value: 'standard', label: 'Standard', description: 'Véhicule classique' },
-    { value: 'premium', label: 'Premium', description: 'Véhicule haut de gamme' },
-    { value: 'van', label: 'Van', description: '7-8 places' },
-    { value: 'electric', label: 'Électrique', description: 'Véhicule écologique' },
-  ];
-
   const workingHoursOptions = [
     { value: 'flexible', label: 'Flexible' },
     { value: 'day', label: 'Jour (6h-18h)' },
     { value: 'night', label: 'Nuit (18h-6h)' },
     { value: 'weekend', label: 'Week-end uniquement' },
-  ];
-
-  const parisZones = [
-    'Paris Centre', 'Paris Nord', 'Paris Sud', 'Paris Est', 'Paris Ouest',
-    'Aéroports', 'Gares', 'Banlieue proche', 'Banlieue éloignée'
   ];
 
   return (
@@ -134,7 +83,7 @@ export default function AddDriverPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form action={action} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Informations personnelles */}
           <Card className="lg:col-span-2">
@@ -153,8 +102,7 @@ export default function AddDriverPage() {
                   <Label htmlFor="firstName">Prénom *</Label>
                   <Input
                     id="firstName"
-                    value={formData.firstName}
-                    // onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    name='firstName'
                     required
                   />
                 </div>
@@ -162,8 +110,7 @@ export default function AddDriverPage() {
                   <Label htmlFor="lastName">Nom *</Label>
                   <Input
                     id="lastName"
-                    value={formData.lastName}
-                    // onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    name='lastName'
                     required
                   />
                 </div>
@@ -175,8 +122,7 @@ export default function AddDriverPage() {
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email}
-                    // onChange={(e) => handleInputChange('email', e.target.value)}
+                    name='email'
                     required
                   />
                 </div>
@@ -184,8 +130,7 @@ export default function AddDriverPage() {
                   <Label htmlFor="phone">Téléphone *</Label>
                   <Input
                     id="phone"
-                    value={formData.phone}
-                    // onChange={(e) => handleInputChange('phone', e.target.value)}
+                    name='phone'
                     required
                   />
                 </div>
@@ -196,8 +141,7 @@ export default function AddDriverPage() {
                 <Input
                   id="dateOfBirth"
                   type="date"
-                  value={formData.dateOfBirth}
-                  // onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                  name='dateOfBirth'
                 />
               </div>
 
@@ -205,8 +149,7 @@ export default function AddDriverPage() {
                 <Label htmlFor="address">Adresse</Label>
                 <Textarea
                   id="address"
-                  value={formData.address}
-                  // onChange={(e) => handleInputChange('address', e.target.value)}
+                  name='address'
                   rows={2}
                 />
               </div>
@@ -216,16 +159,15 @@ export default function AddDriverPage() {
                   <Label htmlFor="city">Ville</Label>
                   <Input
                     id="city"
-                    value={formData.city}
-                    // onChange={(e) => handleInputChange('city', e.target.value)}
+                    name='city'
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">Code postal</Label>
                   <Input
                     id="postalCode"
-                    value={formData.postalCode}
-                    // onChange={(e) => handleInputChange('postalCode', e.target.value)}
+                    type="text"
+                    name='postalCode'
                   />
                 </div>
               </div>
@@ -271,8 +213,7 @@ export default function AddDriverPage() {
                 <Label htmlFor="licenseNumber">Numéro de permis *</Label>
                 <Input
                   id="licenseNumber"
-                  value={formData.licenseNumber}
-                  // onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
+                  name='licenseNumber'
                   required
                 />
               </div>
@@ -281,8 +222,7 @@ export default function AddDriverPage() {
                 <Input
                   id="licenseExpiry"
                   type="date"
-                  value={formData.licenseExpiry}
-                  // onChange={(e) => handleInputChange('licenseExpiry', e.target.value)}
+                  name='licenseExpiry'
                   required
                 />
               </div>
@@ -293,8 +233,7 @@ export default function AddDriverPage() {
                 <Label htmlFor="taxiLicense">Licence taxi *</Label>
                 <Input
                   id="taxiLicense"
-                  value={formData.taxiLicense}
-                  // onChange={(e) => handleInputChange('taxiLicense', e.target.value)}
+                  name='taxiLicense'
                   required
                 />
               </div>
@@ -303,8 +242,7 @@ export default function AddDriverPage() {
                 <Input
                   id="taxiLicenseExpiry"
                   type="date"
-                  value={formData.taxiLicenseExpiry}
-                  // onChange={(e) => handleInputChange('taxiLicenseExpiry', e.target.value)}
+                  name='taxiLicenseExpiry'
                   required
                 />
               </div>
@@ -330,8 +268,7 @@ export default function AddDriverPage() {
                 <Input
                   id="vehicleModel"
                   placeholder="ex: Mercedes Classe E"
-                  value={formData.vehicleModel}
-                  // onChange={(e) => handleInputChange('vehicleModel', e.target.value)}
+                  name='vehicleModel'
                   required
                 />
               </div>
@@ -340,8 +277,7 @@ export default function AddDriverPage() {
                 <Input
                   id="vehiclePlate"
                   placeholder="ex: AB-123-CD"
-                  value={formData.vehiclePlate}
-                  // onChange={(e) => handleInputChange('vehiclePlate', e.target.value)}
+                  name='vehiclePlate'
                   required
                 />
               </div>
@@ -355,22 +291,19 @@ export default function AddDriverPage() {
                   type="number"
                   min="2000"
                   max="2024"
-                  value={formData.vehicleYear}
-                  // onChange={(e) => handleInputChange('vehicleYear', e.target.value)}
+                  name='vehicleYear'
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vehicleColor">Couleur</Label>
                 <Input
                   id="vehicleColor"
-                  value={formData.vehicleColor}
-                  // onChange={(e) => handleInputChange('vehicleColor', e.target.value)}
+                  name='vehicleColor'
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vehicleSeats">Nombre de places</Label>
-                <Select value={formData.vehicleSeats} 
-                // onValueChange={(value) => handleInputChange('vehicleSeats', value)}
+                <Select name='vehicleSeats'
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -385,25 +318,21 @@ export default function AddDriverPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label>Type de véhicule</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {vehicleTypes.map((type) => (
                   <div
                     key={type.value}
-                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                      formData.vehicleType === type.value
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    // onClick={() => handleInputChange('vehicleType', type.value)}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors`}
+                    
                   >
                     <div className="font-medium">{type.label}</div>
                     <div className="text-sm text-muted-foreground">{type.description}</div>
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
@@ -421,9 +350,7 @@ export default function AddDriverPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Horaires de travail</Label>
-              <Select value={formData.workingHours} 
-              // onValueChange={(value) => handleInputChange('workingHours', value)}
-              >
+              <Select name='workingHours' >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -437,30 +364,6 @@ export default function AddDriverPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Zones préférées</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {parisZones.map((zone: string) => (
-                  <div
-                    key={zone}
-                    className={`p-2 text-sm border rounded cursor-pointer transition-colors ${
-                      formData.preferredZones.includes(zone)
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                    // onClick={() => {
-                    //   const zones = formData.preferredZones.includes(zone)
-                    //     ? formData.preferredZones.filter(z => z !== zone)
-                    //     : [...formData.preferredZones, zone];
-                    //   handleInputChange('preferredZones', zones);
-                    // }}
-                  >
-                    {zone}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
@@ -468,8 +371,7 @@ export default function AddDriverPage() {
                   <p className="text-xs text-muted-foreground">Peut recevoir des courses</p>
                 </div>
                 <Switch
-                  checked={formData.isActive}
-                  // onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+                  name='isActive'
                 />
               </div>
               <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -478,8 +380,7 @@ export default function AddDriverPage() {
                   <p className="text-xs text-muted-foreground">Accepte les paiements cash</p>
                 </div>
                 <Switch
-                  checked={formData.canAcceptCash}
-                  // onCheckedChange={(checked) => handleInputChange('canAcceptCash', checked)}
+                  name='canAcceptCash'
                 />
               </div>
               <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -488,8 +389,7 @@ export default function AddDriverPage() {
                   <p className="text-xs text-muted-foreground">Accepte les cartes bancaires</p>
                 </div>
                 <Switch
-                  checked={formData.canAcceptCard}
-                  // onCheckedChange={(checked) => handleInputChange('canAcceptCard', checked)}
+                  name='canAcceptCard'
                 />
               </div>
             </div>
@@ -512,8 +412,7 @@ export default function AddDriverPage() {
               <Label htmlFor="bankName">Nom de la banque</Label>
               <Input
                 id="bankName"
-                value={formData.bankName}
-                // onChange={(e) => handleInputChange('bankName', e.target.value)}
+                name='bankName'
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -522,8 +421,7 @@ export default function AddDriverPage() {
                 <Input
                   id="iban"
                   placeholder="FR76 1234 5678 9012 3456 7890 123"
-                  value={formData.iban}
-                  // onChange={(e) => handleInputChange('iban', e.target.value)}
+                  name='iban'
                 />
               </div>
               <div className="space-y-2">
@@ -531,8 +429,7 @@ export default function AddDriverPage() {
                 <Input
                   id="bic"
                   placeholder="BNPAFRPP"
-                  value={formData.bic}
-                  // onChange={(e) => handleInputChange('bic', e.target.value)}
+                  name='bic'
                 />
               </div>
             </div>
@@ -549,8 +446,8 @@ export default function AddDriverPage() {
             <X className="h-4 w-4 mr-2" />
             Annuler
           </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? (
+          <Button type="submit" disabled={pending}>
+            {pending ? (
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
                 Enregistrement...
