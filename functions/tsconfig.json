@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2021",
+    "esModuleInterop": true,
+    "skipLibCheck": true, // Très important: ignore les erreurs de type dans les node_modules
+    "forceConsistentCasingInFileNames": true
+  },
+  "compileOnSave": true,
+  "include": [
+    "src" // Ne compile que ce qui est dans le dossier 'src'
+  ],
+  "exclude": [
+    "node_modules" // Exclut explicitement les node_modules
+  ]
+}
