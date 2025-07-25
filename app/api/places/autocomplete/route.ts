@@ -1,7 +1,7 @@
 // app/api/places/autocomplete/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { Client, PlaceAutocompleteRequest, PlaceAutocompleteType } from "@googlemaps/google-maps-services-js";
+import { Client, PlaceAutocompleteRequest } from "@googlemaps/google-maps-services-js";
 
 const googleMapsClient = new Client({});
 
