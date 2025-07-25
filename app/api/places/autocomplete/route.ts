@@ -1,7 +1,7 @@
 // app/api/places/autocomplete/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { Client, PlaceAutocompleteType } from "@googlemaps/google-maps-services-js";
+import { Client, PlaceAutocompleteRequest, PlaceAutocompleteType } from "@googlemaps/google-maps-services-js";
 
 const googleMapsClient = new Client({});
 
@@ -24,23 +24,21 @@ export async function GET(request: NextRequest) {
   }
   
   // 3. Préparer les paramètres pour l'appel à l'API Google.
-  const apiParams: { input: string, key: string, location?: { lat: number, lng: number}, radius?: number, types?: PlaceAutocompleteType } = {
-    input: query,
-    key: process.env.GOOGLE_MAPS_API_KEY!,
-    // Optionnel, mais fortement recommandé : restreindre les résultats autour
-    // de la position actuelle de l'utilisateur pour une meilleure pertinence.
-    ...(lat && lng && {
-        location: { lat: parseFloat(lat), lng: parseFloat(lng) },
-        radius: 50000 // Rayon de 100km
-    }),
-    types: PlaceAutocompleteType.address,
-  };
+  const apiParams: PlaceAutocompleteRequest = {
+    params: {
+      input: query,
+      key: process.env.GOOGLE_MAPS_API_KEY!,
+      types: PlaceAutocompleteType.address,
+      components: ["country:cd"],
+      language: "fr",
+      location: lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined,
+      radius: lat && lng ? 500 : undefined,
+    }
+}
   
   try {
     // 4. Appeler l'API Place Autocomplete de Google.
-    const autocompleteResponse = await googleMapsClient.placeAutocomplete({
-      params: apiParams,
-    });
+    const autocompleteResponse = await googleMapsClient.placeAutocomplete(apiParams);
     
     // 5. Formater la réponse pour notre application Flutter.
     // On ne renvoie que les données dont on a besoin pour garder la réponse légère.
