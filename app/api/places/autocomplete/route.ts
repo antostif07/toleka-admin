@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   }
   
   // 3. Préparer les paramètres pour l'appel à l'API Google.
-  const apiParams: { input: string, key: string, location?: any, radius?: number, types?: PlaceAutocompleteType } = {
+  const apiParams: { input: string, key: string, location?: { lat: number, lng: number}, radius?: number, types?: PlaceAutocompleteType } = {
     input: query,
     key: process.env.GOOGLE_MAPS_API_KEY!,
     // Optionnel, mais fortement recommandé : restreindre les résultats autour
