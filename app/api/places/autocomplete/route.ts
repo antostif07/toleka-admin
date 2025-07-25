@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     params: {
       input: query,
       key: process.env.GOOGLE_MAPS_API_KEY!,
-      types: PlaceAutocompleteType.address,
       components: ["country:cd"],
       language: "fr",
       location: lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : undefined,
