@@ -1,7 +1,7 @@
 // app/api/geocode/reverse/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { Client } from "@googlemaps/google-maps-services-js";
+import { Client, Language } from "@googlemaps/google-maps-services-js";
 
 // 1. Initialiser le client Google Maps une seule fois pour la réutiliser.
 // C'est plus performant que de le créer à chaque requête.
@@ -27,17 +27,27 @@ export async function POST(request: NextRequest) {
       params: {
         latlng: { latitude, longitude },
         key: process.env.GOOGLE_MAPS_API_KEY!,
+        language: Language.fr,
       },
     });
 
     // 5. Traiter la réponse de l'API Google Maps.
     if (geocodeResponse.data.results && geocodeResponse.data.results.length > 0) {
-      // Le premier résultat est généralement le plus précis.
-      const formattedAddress = geocodeResponse.data.results[0].formatted_address;
+        const firstResult = geocodeResponse.data.results[0];
+        
+        // On récupère les composants de l'adresse
+        const addressComponents = firstResult.address_components;
 
-      // 6. Renvoyer une réponse de succès à l'application Flutter.
-      // Le format { "address": "..." } correspond à ce que notre ApiService Flutter attend.
-      return NextResponse.json({ address: formattedAddress }, { status: 200 });
+        const unwantedTypes = new Set(['country', 'postal_code']);
+        const filteredComponents = addressComponents.filter(
+            component => !component.types.some(type => unwantedTypes.has(type))
+        );
+
+        const customAddress = filteredComponents.map(c => c.long_name).join(', ');
+
+        const finalAddress = customAddress.replace(/^[A-Z0-9]+\+[A-Z0-9]+\s/, '');
+
+        return NextResponse.json({ address: finalAddress.trim() }, { status: 200 });
     } else {
       // Si aucune adresse n'est trouvée pour ces coordonnées.
       return NextResponse.json({ error: "Aucune adresse trouvée pour ces coordonnées." }, { status: 404 });
