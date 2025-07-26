@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Traiter la réponse
     const route = directionsResponse.data.routes[0];
-    if (route) {
+    if (route && route.legs && route.legs.length > 0) {
       const leg = route.legs[0];
       
       const result = {
@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
         
         // Les limites géographiques pour un zoom automatique
         bounds: route.bounds, // { northeast: { lat, lng }, southwest: { lat, lng } }
+        startLocation: leg.start_location, // { lat, lng }
+        endLocation: leg.end_location, // { lat, lng }
       };
       
       return NextResponse.json(result, { status: 200 });
