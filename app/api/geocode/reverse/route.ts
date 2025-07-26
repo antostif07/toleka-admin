@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Client, Language } from "@googlemaps/google-maps-services-js";
+import { formatAddress } from "@/app/utilis/adressFormatter";
 
 // 1. Initialiser le client Google Maps une seule fois pour la réutiliser.
 // C'est plus performant que de le créer à chaque requête.
@@ -33,21 +34,11 @@ export async function POST(request: NextRequest) {
 
     // 5. Traiter la réponse de l'API Google Maps.
     if (geocodeResponse.data.results && geocodeResponse.data.results.length > 0) {
-        const firstResult = geocodeResponse.data.results[0];
+        const rawAddress = geocodeResponse.data.results[0].formatted_address;
         
-        // On récupère les composants de l'adresse
-        const addressComponents = firstResult.address_components;
+        const formattedAddress = formatAddress(rawAddress);
 
-        const unwantedTypes = new Set(['country', 'postal_code']);
-        const filteredComponents = addressComponents.filter(
-            component => !component.types.some(type => unwantedTypes.has(type))
-        );
-
-        const customAddress = filteredComponents.map(c => c.long_name).join(', ');
-
-        const finalAddress = customAddress.replace(/^[A-Z0-9]+\+[A-Z0-9]+\s/, '');
-
-        return NextResponse.json({ address: finalAddress.trim() }, { status: 200 });
+        return NextResponse.json({ address: formattedAddress }, { status: 200 });
     } else {
       // Si aucune adresse n'est trouvée pour ces coordonnées.
       return NextResponse.json({ error: "Aucune adresse trouvée pour ces coordonnées." }, { status: 404 });
