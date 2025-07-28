@@ -5,6 +5,16 @@ import { Calendar, Car, Users, DollarSign } from 'lucide-react';
 import { createDriverFromFirestore, SerializableDriver } from '../models/driver.model';
 import { Timestamp } from 'firebase-admin/firestore';
 import { GetUsersParams, SerializableUser } from '../models/rider.model';
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+  doc,
+  getDoc as getClientDoc
+} from 'firebase/firestore';
+import { db as clientDb } from './client';
 
 interface GetDriversParams {
   search?: string;
@@ -16,47 +26,85 @@ interface GetDriversParams {
 
 // --- FONCTION POUR LES STATS PRINCIPALES ---
 export async function getDashboardStats() {
-  // TODO: Implémenter la logique de calcul. Pour l'instant, on retourne les données mock.
-  // Exemple de logique :
-  // const today = new Date();
-  // today.setHours(0, 0, 0, 0);
-  // const bookingsTodaySnapshot = await adminDb.collection('rides').where('createdAt', '>=', today).get();
-  // const activeDriversSnapshot = await adminDb.collection('drivers').where('isOnline', '==', true).get();
+  const statsRef = adminDb.collection("metadata").doc("statistics");
+  const docSnap = await statsRef.get();
+  
+  console.log(docSnap.data());
+  
+  if (!docSnap.exists) {
+    console.warn("Document de statistiques non trouvé !");
+    return [
+      { title: 'Réservations (Aujourd\'hui)', value: '0', change: '', trend: 'up', icon: Calendar, color: 'text-blue-500' },
+      { title: 'Chauffeurs Actifs', value: '0', change: '', trend: 'up', icon: Car, color: 'text-green-500' },
+      { title: 'Nouveaux Clients', value: '0', change: '', trend: 'up', icon: Users, color: 'text-purple-500' },
+      { title: 'Revenus du Jour', value: 'CDF 0.00', change: '', trend: 'down', icon: DollarSign, color: 'text-yellow-500' },
+    ];
+  }
 
+  const stats = docSnap.data()!;
+
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+
+  const getKeys = (date: Date) => ({
+    year: date.getUTCFullYear().toString(),
+    month: (date.getUTCMonth() + 1).toString().padStart(2, '0'),
+    day: date.getUTCDate().toString().padStart(2, '0'),
+  });
+
+  const todayKeys = getKeys(now);
+  const yesterdayKeys = getKeys(yesterday);
+  
+  const bookingsToday = stats.rides?.byYear?.[todayKeys.year]?.byMonth?.[todayKeys.month]?.byDay?.[todayKeys.day]?.total ?? 0;
+  const bookingsYesterday = stats.rides?.byYear?.[yesterdayKeys.year]?.byMonth?.[yesterdayKeys.month]?.byDay?.[yesterdayKeys.day]?.total ?? 0;
+  const bookingsChange = bookingsYesterday > 0 ? (((bookingsToday - bookingsYesterday) / bookingsYesterday) * 100).toFixed(0) : bookingsToday > 0 ? 100 : 0;
+  
+  // --- Revenus (Exemple, si vous le stockez) ---
+  const revenueToday = stats.rides?.byYear?.[todayKeys.year]?.byMonth?.[todayKeys.month]?.byDay?.[todayKeys.day]?.totalRevenue ?? 0;
+  const revenueYesterday = stats.rides?.byYear?.[yesterdayKeys.year]?.byMonth?.[yesterdayKeys.month]?.byDay?.[yesterdayKeys.day]?.totalRevenue ?? 0;
+  const revenueChange = revenueYesterday > 0 ? (((revenueToday - revenueYesterday) / revenueYesterday) * 100).toFixed(0) : revenueToday > 0 ? 100 : 0;
+  
+  // --- Total Chauffeurs ---
+  const totalDrivers = stats.drivers?.total || 0;
+  // (Le calcul de la tendance pour les chauffeurs actifs/nouveaux clients nécessiterait plus de stats,
+  // pour l'instant, nous affichons le total)
+
+  // 4. Formater les données pour l'UI
   return [
-  {
-    title: 'Réservations Aujourd\'hui',
-    value: '127',
-    change: '+12%',
-    trend: 'up',
-    icon: Calendar,
-    color: 'text-blue-500',
-  },
-  {
-    title: 'Chauffeurs Actifs',
-    value: '34',
-    change: '+2',
-    trend: 'up',
-    icon: Car,
-    color: 'text-green-500',
-  },
-  {
-    title: 'Nouveaux Clients',
-    value: '18',
-    change: '+8%',
-    trend: 'up',
-    icon: Users,
-    color: 'text-purple-500',
-  },
-  {
-    title: 'Revenus du Jour',
-    value: '€2,847',
-    change: '-3%',
-    trend: 'down',
-    icon: DollarSign,
-    color: 'text-yellow-500',
-  },
-];
+    {
+      title: 'Réservations (Aujourd\'hui)',
+      value: `${bookingsToday}`,
+      change: `${bookingsChange}% depuis hier`,
+      trend: parseFloat(`${bookingsChange}`) >= 0 ? 'up' : 'down',
+      icon: Calendar,
+      color: 'text-blue-500',
+    },
+    {
+      title: 'Chauffeurs Actifs', // Cette donnée est difficile à obtenir via des stats, elle nécessite une query. On garde le total.
+      value: `${totalDrivers}`,
+      change: '+2 ce mois-ci', // On garde une valeur en dur pour l'instant
+      trend: 'up',
+      icon: Users, // Icône pour le nombre total de chauffeurs
+      color: 'text-green-500',
+    },
+    {
+      title: 'Nouveaux Clients (Aujourd\'hui)', // Nécessiterait aussi un trigger sur 'riders'
+      value: '18', // On garde en dur pour l'instant
+      change: '+8%',
+      trend: 'up',
+      icon: Users,
+      color: 'text-purple-500',
+    },
+    {
+      title: 'Revenus du Jour',
+      value: `€${revenueToday.toFixed(2)}`,
+      change: `${revenueChange}% depuis hier`,
+      trend: parseFloat(`${revenueChange}`) >= 0 ? 'up' : 'down',
+      icon: DollarSign,
+      color: 'text-yellow-500',
+    },
+  ];
 }
 
 // --- FONCTION POUR LES RÉSERVATIONS RÉCENTES ---

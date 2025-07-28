@@ -1,4 +1,5 @@
 // lib/firebase/client.ts
+import { getFirestore } from "firebase-admin/firestore";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
@@ -14,5 +15,6 @@ const firebaseConfig = {
 // Initialiser Firebase côté client
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-export { app, auth };
+export { app, auth, db };
