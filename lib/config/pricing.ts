@@ -34,7 +34,7 @@ export async function getPricingConfig(): Promise<Record<string, PricingParams>>
     throw new Error("Le document de configuration 'pricing' n'existe pas dans Firestore !");
   }
 
-  const configData = docSnap.data() as Record<string, any>;
+  const configData = docSnap.data() as Record<string, PricingParams>;
   
   // Mettre à jour le cache
   cachedPricingConfig = configData;

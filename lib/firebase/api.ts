@@ -5,16 +5,6 @@ import { Calendar, Car, Users, DollarSign } from 'lucide-react';
 import { createDriverFromFirestore, SerializableDriver } from '../models/driver.model';
 import { Timestamp } from 'firebase-admin/firestore';
 import { GetUsersParams, SerializableUser } from '../models/rider.model';
-import {
-  collection,
-  onSnapshot,
-  query,
-  orderBy,
-  limit,
-  doc,
-  getDoc as getClientDoc
-} from 'firebase/firestore';
-import { db as clientDb } from './client';
 
 interface GetDriversParams {
   search?: string;

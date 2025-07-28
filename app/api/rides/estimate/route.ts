@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { Client, Language, TrafficModel, TravelMode, UnitSystem } from "@googlemaps/google-maps-services-js";
 import { calculateFare, getPricingConfig, PricingParams } from "@/lib/config/pricing";
 
-// Un cache simple en mémoire pour éviter de lire Firestore à chaque requête.
-let cachedPricingConfig: Record<string, PricingParams> | null = null;
-let lastFetchTime: number = 0;
-
 const googleMapsClient = new Client({});
 
 export async function POST(request: NextRequest) {
