@@ -27,7 +27,7 @@ export async function getPricingConfig(): Promise<Record<string, PricingParams>>
   }
   
   console.log("Fetching pricing configuration from Firestore...");
-  const docRef = adminDb.collection('configuration').doc('pricing');
+  const docRef = adminDb.collection('configuration').doc('wteyHkz9AhywmEXj1jzS');
   const docSnap = await docRef.get();
 
   if (!docSnap.exists) {
