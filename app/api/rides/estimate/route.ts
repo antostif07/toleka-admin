@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
           id: vehicleType,
           name: params.displayName,
           // Vous devrez avoir une logique pour mapper le 'vehicleType' à une image
-          imagePath: `/assets/images/${vehicleType}.png`,
+          imagePath: `/assets/images/${vehicleType}.webp`,
           price: price,
           distance: leg.distance,
           duration: leg.duration,
