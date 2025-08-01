@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,75 +21,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Search, Download, Eye, Phone, MapPin, Clock } from 'lucide-react';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase/client';
 
-// Mock data
-const reservations = [
-  {
-    id: 'BK-001',
-    client: 'Marie Dubois',
-    phone: '+33 1 23 45 67 89',
-    driver: 'Jean Martin',
-    pickup: '123 Rue de la Paix, Paris',
-    destination: 'Aéroport Charles de Gaulle',
-    date: '2024-01-15',
-    time: '10:30',
-    status: 'En cours',
-    amount: 45.00,
-    distance: '35 km',
-  },
-  {
-    id: 'BK-002',
-    client: 'Pierre Lambert',
-    phone: '+33 1 98 76 54 32',
-    driver: 'Sophie Bernard',
-    pickup: '456 Avenue des Champs-Élysées',
-    destination: 'Gare du Nord',
-    date: '2024-01-15',
-    time: '09:15',
-    status: 'Terminé',
-    amount: 28.00,
-    distance: '12 km',
-  },
-  {
-    id: 'BK-003',
-    client: 'Alice Moreau',
-    phone: '+33 1 11 22 33 44',
-    driver: 'Michel Durand',
-    pickup: '789 Boulevard Saint-Germain',
-    destination: '321 Rue de Rivoli',
-    date: '2024-01-15',
-    time: '14:00',
-    status: 'Planifié',
-    amount: 32.00,
-    distance: '8 km',
-  },
-  {
-    id: 'BK-004',
-    client: 'Thomas Martin',
-    phone: '+33 1 55 66 77 88',
-    driver: 'Emma Petit',
-    pickup: 'Gare de Lyon',
-    destination: 'Tour Eiffel',
-    date: '2024-01-14',
-    time: '16:45',
-    status: 'Annulé',
-    amount: 25.00,
-    distance: '15 km',
-  },
-  {
-    id: 'BK-005',
-    client: 'Sarah Johnson',
-    phone: '+33 1 99 88 77 66',
-    driver: 'Pierre Dubois',
-    pickup: 'Musée du Louvre',
-    destination: 'Montmartre',
-    date: '2024-01-14',
-    time: '11:20',
-    status: 'Terminé',
-    amount: 38.00,
-    distance: '22 km',
-  },
-];
+type Reservation = {
+  id: string;
+  client: string;
+  phone: string;
+  driver: string;
+  pickup: string;
+  destination: string;
+  date: string; // Note: Si vous utilisez des Timestamps Firestore, il faudra convertir .toDate().toLocaleDateString()
+  time: string;
+  status: 'En cours' | 'Terminé' | 'Planifié' | 'Annulé';
+  amount: number;
+  distance: string;
+};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -107,9 +54,30 @@ const getStatusBadge = (status: string) => {
 };
 
 export default function ReservationsPage() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  useEffect(() => {
+    // Créer une requête sur la collection 'rides'
+    const q = query(collection(db, 'rides'));
+
+    // onSnapshot établit l'écouteur en temps réel
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const ridesData: Reservation[] = [];
+      querySnapshot.forEach((doc) => {
+        // Ajouter l'ID du document aux données
+        ridesData.push({ id: doc.id, ...doc.data() } as Reservation);
+      });
+      setReservations(ridesData);
+    });
+
+    // La fonction de nettoyage de useEffect
+    // Elle se déclenchera à la sortie du composant pour stopper l'écouteur
+    // et éviter les fuites de mémoire.
+    return () => unsubscribe();
+  }, []);
+  
   const filteredReservations = reservations.filter(reservation => {
     const matchesSearch = 
       reservation.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
