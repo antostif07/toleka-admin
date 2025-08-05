@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     // 1. Sécuriser la route avec un "Cron Secret"
     // C'est un secret que seul Vercel et cette fonction connaîtront.
     const authToken = req.headers.get('Authorization')?.split('Bearer ')[1];
-    if (authToken !== process.env.CRON_SECRET) {
+    if (authToken !== process.env.CRON_JOB_KEY) {
         console.warn("Accès non autorisé au Cron Job de dispatch.");
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
