@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import * as geofire from 'geofire-common';
+import { adminDb } from '@/lib/firebase/admin';
 
-// --- Configuration de Firebase Admin SDK ---
-// Assurez-vous que cette initialisation n'est faite qu'une seule fois dans votre projet.
-// Si vous l'avez déjà dans un autre fichier, vous pouvez l'enlever d'ici.
-if (!admin.apps.length) {
-    admin.initializeApp({
-        // Cette configuration est idéale pour les environnements de production comme Vercel
-        // qui utilisent des variables d'environnement pour les credentials.
-        credential: admin.credential.applicationDefault(),
-    });
-}
-const db = admin.firestore();
+const db = adminDb;
 
 // ============================================================================
 // FONCTION UTILITAIRE DE RECHERCHE DE CHAUFFEURS
@@ -74,11 +65,11 @@ async function findAvailableDrivers(center: [number, number], excludedDriverIds:
 // ============================================================================
 export async function POST(req: NextRequest) {
     // 1. Sécuriser l'API avec la clé secrète
-    // const token = req.headers.get('Authorization')?.split('Bearer ')[1];
-    // if (token !== process.env.SESSION_SECRET_KEY) { // Assurez-vous que le nom correspond à votre .env
-    //     console.warn("Accès non autorisé à l'API de dispatch.");
-    //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const token = req.headers.get('Authorization')?.split('Bearer ')[1];
+    if (token !== process.env.API_SECRET_KEY) { // Assurez-vous que le nom correspond à votre .env
+        console.warn("Accès non autorisé à l'API de dispatch.");
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { rideId } = await req.json();
     if (!rideId) {
@@ -154,10 +145,10 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
         console.error(`[${rideId}] Erreur dans la transaction de dispatch:`, error);
-        // await db.collection('rides').doc(rideId).update({ 
-        //     status: 'FAILED', 
-        //     'dispatch.lastError': 'DISPATCH_TRANSACTION_FAILED' 
-        // });
+        await db.collection('rides').doc(rideId).update({ 
+            status: 'FAILED', 
+            'dispatch.lastError': 'DISPATCH_TRANSACTION_FAILED' 
+        });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 
