@@ -21,6 +21,7 @@ export async function POST(
         // On pourrait vérifier si l'utilisateur a bien le rôle "driver" via ses custom claims
         driverId = decodedToken.uid;
     } catch (error) {
+        console.error(`[${rideId}] Erreur de vérification du token:`, error);
         return NextResponse.json({ error: 'Token invalide.' }, { status: 401 });
     }
     
@@ -59,8 +60,9 @@ export async function POST(
         console.log(`[${rideId}] Course acceptée avec succès par ${driverId}.`);
         return NextResponse.json({ success: true }, { status: 200 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error(`[${rideId}] Erreur d'acceptation par ${driverId}:`, error);
-        return NextResponse.json({ error: error.message || 'Erreur interne.' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Erreur interne.';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

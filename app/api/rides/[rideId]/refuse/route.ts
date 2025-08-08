@@ -18,6 +18,7 @@ export async function POST(
         const decodedToken = await adminAuth.verifyIdToken(token);
         driverId = decodedToken.uid;
     } catch (error) {
+        console.error(`[${rideId}] Erreur de vérification du token:`, error);
         return NextResponse.json({ error: 'Token invalide.' }, { status: 401 });
     }
 
