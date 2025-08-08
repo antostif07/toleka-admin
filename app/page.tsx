@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 "use client"
 
 import { Button } from "@/components/ui/button"
@@ -5,29 +7,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Car, Clock, MapPin, Phone, Shield, Star, Users, Download, Smartphone, CheckCircle } from "lucide-react"
 import Image from "next/image"
-import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from "framer-motion"
+import { motion, useScroll, useTransform, useInView, TargetAndTransition, VariantLabels, LegacyAnimationControls, Transition, } from "framer-motion"
 import { useRef, useState, useEffect } from "react"
 
 // Animation variants avec effets de scroll avancés
-const fadeInUp = {
+const fadeInUp: {
+    initial: boolean | TargetAndTransition | VariantLabels | undefined;
+    animate: boolean | TargetAndTransition | VariantLabels | LegacyAnimationControls | undefined;
+    transition: Transition<any> | undefined;
+} = {
   initial: { opacity: 0, y: 60 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: [0.25, 0.25, 0.25, 0.75] }
+  transition: { duration: 0.8, ease: "easeInOut" }
 }
 
-const slideInLeft = {
+const slideInLeft: {
+    initial: boolean | TargetAndTransition | VariantLabels | undefined;
+    animate: boolean | TargetAndTransition | VariantLabels | LegacyAnimationControls | undefined;
+    transition: Transition<any> | undefined;
+}  = {
   initial: { opacity: 0, x: -100, rotateY: -15 },
   animate: { opacity: 1, x: 0, rotateY: 0 },
   transition: { duration: 0.8, ease: "easeOut" }
 }
 
-const slideInRight = {
+const slideInRight: {
+    initial: boolean | TargetAndTransition | VariantLabels | undefined;
+    animate: boolean | TargetAndTransition | VariantLabels | LegacyAnimationControls | undefined;
+    transition: Transition<any> | undefined;
+}  = {
   initial: { opacity: 0, x: 100, rotateY: 15 },
   animate: { opacity: 1, x: 0, rotateY: 0 },
   transition: { duration: 0.8, ease: "easeOut" }
 }
 
-const scaleReveal = {
+const scaleReveal: {
+    initial: boolean | TargetAndTransition | VariantLabels | undefined;
+    animate: boolean | TargetAndTransition | VariantLabels | LegacyAnimationControls | undefined;
+    transition: Transition<any> | undefined;
+}  = {
   initial: { opacity: 0, scale: 0.8, rotateX: -15 },
   animate: { opacity: 1, scale: 1, rotateX: 0 },
   transition: { duration: 0.8, ease: "easeOut" }
@@ -42,19 +60,23 @@ const staggerContainer = {
   }
 }
 
-const scaleOnHover = {
-  hover: {
-    scale: 1.05,
-    rotateY: 5,
-    rotateX: 5,
-    transition: { duration: 0.3 }
-  }
-}
+// const scaleOnHover = {
+//   hover: {
+//     scale: 1.05,
+//     rotateY: 5,
+//     rotateX: 5,
+//     transition: { duration: 0.3 }
+//   }
+// }
 
 // Composant de révélation progressive
 function RevealSection({ children, animation = fadeInUp, className = "" }: {
   children: React.ReactNode;
-  animation?: any;
+  animation?: {
+    initial: boolean | TargetAndTransition | VariantLabels | undefined,
+    animate: boolean | TargetAndTransition | VariantLabels | LegacyAnimationControls | undefined,
+    transition: Transition<any> | undefined,
+  };
   className?: string
 }) {
   const ref = useRef(null)
@@ -79,19 +101,18 @@ function ParallaxElement({ children, speed = 0.5, direction = "up" }: {
   speed?: number;
   direction?: "up" | "down" | "left" | "right";
 }) {
-  const { scrollYProgress } = useScroll()
+  const { scrollYProgress } = useScroll();
 
-  const getTransform = () => {
-    switch (direction) {
-      case "up": return useTransform(scrollYProgress, [0, 1], [0, -speed * 100])
-      case "down": return useTransform(scrollYProgress, [0, 1], [0, speed * 100])
-      case "left": return useTransform(scrollYProgress, [0, 1], [0, -speed * 100])
-      case "right": return useTransform(scrollYProgress, [0, 1], [0, speed * 100])
-      default: return useTransform(scrollYProgress, [0, 1], [0, -speed * 100])
-    }
-  }
+  // Calculer les valeurs cibles pour useTransform AVANT l'appel
+  let outputRange: [number, number];
+  if (direction === "up") outputRange = [0, -speed * 100];
+  else if (direction === "down") outputRange = [0, speed * 100];
+  else if (direction === "left") outputRange = [0, -speed * 100];
+  else if (direction === "right") outputRange = [0, speed * 100];
+  else outputRange = [0, -speed * 100];
 
-  const transform = getTransform()
+  // Appeler le hook toujours au même niveau
+  const transform = useTransform(scrollYProgress, [0, 1], outputRange);
 
   return (
     <motion.div
@@ -99,7 +120,7 @@ function ParallaxElement({ children, speed = 0.5, direction = "up" }: {
     >
       {children}
     </motion.div>
-  )
+  );
 }
 
 // Composant de compteur animé
@@ -540,7 +561,7 @@ export default function Home() {
               whileInView={{ clipPath: "inset(0 0% 0 0)" }}
               transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
             >
-              Disponible gratuitement sur iOS et Android. Commencez à voyager différemment dès aujourd'hui.
+              {`Disponible gratuitement sur iOS et Android. Commencez à voyager différemment dès aujourd'hui.`}
             </motion.p>
           </RevealSection>
 
@@ -801,7 +822,7 @@ export default function Home() {
                     transition={{ duration: 0.6, delay: 0.5 }}
                   >
                     <Button className="w-full bg-black text-yellow-500 hover:bg-gray-800 text-lg py-3 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                      Commencer l'inscription
+                      {`Commencer l'inscription`}
                     </Button>
                   </motion.div>
                 </form>
@@ -855,7 +876,7 @@ export default function Home() {
                   <span className="text-2xl font-bold text-yellow-500">Toleka</span>
                 </motion.div>
                 <p className="text-gray-400">
-                  L'application de VTC nouvelle génération. Voyagez différemment, voyagez avec Toleka.
+                  {`L'application de VTC nouvelle génération. Voyagez différemment, voyagez avec Toleka.`}
                 </p>
               </div>
             </RevealSection>

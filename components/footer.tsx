@@ -94,7 +94,7 @@ const Footer = () => {
                 Mentions légales
               </a>
               <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
-                Conditions d'utilisation
+                {`Conditions d'utilisation`}
               </a>
               <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
                 RGPD

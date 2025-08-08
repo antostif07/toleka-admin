@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, } from 'lucide-react';
 import { Button } from './ui/button';
 import Navbar from './navbar';
+import Image from 'next/image';
 
 const Hero = () => {
   return (
@@ -20,13 +21,12 @@ const Hero = () => {
                         </h1>
                         
                         <p className="text-xl text-gray-600 max-w-lg">
-                        Transport haut de gamme, réservation simple et rapide. 
-                        Vivez l'excellence à chaque trajet.
+                        {`Toleka est l'application de VTC nouvelle génération qui vous permet de commander une voiture de luxe en quelques clics. Profitez d'une expérience de conduite exceptionnelle avec des chauffeurs professionnels et des véhicules haut de gamme.`}
                         </p>
                         
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Button variant="secondary" size="lg">
-                                Telecharger l'App <ArrowRight className="ml-2" />
+                                {`Telecharger l'App`} <ArrowRight className="ml-2" />
                             </Button>
                         </div>
                     
@@ -35,7 +35,9 @@ const Hero = () => {
                 
                 {/* Image */}
                 <div className="relative">
-                    <img 
+                    <Image
+                    width={600}
+                    height={400}
                     src="/images/toleka-car.webp"
                     alt="Voiture de luxe blanche"
                     className="relative z-10 w-full h-auto"
